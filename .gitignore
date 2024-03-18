@@ -10,5 +10,6 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-build/
-bin/
+build_windows/
+build_linux/
+.vscode/

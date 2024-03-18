@@ -15,7 +15,7 @@ then
 echo "Error:"$ERRORLEVEL && exit
 fi
 
-pushd testbed
+pushd editor
 source build.sh
 popd
 ERRORLEVEL=$?

@@ -2,6 +2,6 @@
 
 #include <stdio.h>
 
-KAPI void print_int(i32 i) {
+FAPI void print_int(i32 i) {
     printf("The number is: %i\n", i);
 }

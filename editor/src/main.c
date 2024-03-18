@@ -1,4 +1,4 @@
-#include "../../engine/src/test.h"
+#include "test.h"
 
 #include <stdio.h>
 

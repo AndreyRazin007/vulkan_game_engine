@@ -3,13 +3,14 @@ REM Build Everything
 
 ECHO "Building everything..."
 
+MD build_windows
 
 PUSHD engine
 CALL build.bat
 POPD
 IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)
 
-PUSHD testbed
+PUSHD editor
 CALL build.bat
 POPD
 IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)

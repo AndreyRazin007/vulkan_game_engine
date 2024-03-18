@@ -2,4 +2,4 @@
 
 #include "defines.h"
 
-KAPI void print_int(i32 number);
+FAPI void print_int(i32 number);

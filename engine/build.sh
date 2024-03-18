@@ -2,7 +2,7 @@
 # Build script for engine
 set echo on
 
-mkdir -p ../bin
+mkdir -p ../build_linux
 
 # Get a list of all the .c files.
 cFilenames=$(find . -type f -name "*.c")
@@ -15,7 +15,7 @@ compilerFlags="-g -shared -fdeclspec -fPIC"
 # -Wall -Werror
 includeFlags="-Isrc -I$VULKAN_SDK/include"
 linkerFlags="-lvulkan -lxcb -lxkbcommon -L$VULKAN_SDK/lib"
-defines="-D_DEBUG -DKEXPORT"
+defines="-D_DEBUG -DFEXPORT"
 
 echo "Building $assembly..."
-clang $cFilenames $compilerFlags -o ../bin/lib$assembly.so $defines $includeFlags $linkerFlags
+clang $cFilenames $compilerFlags -o ../build_linux/lib$assembly.so $defines $includeFlags $linkerFlags
