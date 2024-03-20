@@ -1,5 +1,6 @@
 #include "logger.h"
 #include "asserts.h"
+#include "platform/platform.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -11,30 +12,37 @@ b8 initializeLogging() {
 
 void shutdownLogging() {}
 
-void logOutput(log_level level, const char *message, ...) {
-    const char *level_strings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARNING]: ", "[INFO]: ", "[DEBUG]: ", "[TRACE]: "};
+void logOutput(logLevel level, const char *message, ...) {
+    const char *levelStrings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARNING]: ", "[INFO]: ", "[DEBUG]: ", "[TRACE]: "};
 
-    /* b8 is_error = level < 2;
-     *
-     * Technically imposes a 32k character limit on a single log entry, but...
-     * DON'T DO THAT! */
-    char messageInput[32000];
+    b8 isError = level < 2;
+
+    /* Technically imposes a 32k character limit on a single log entry, but...
+     * DON'T DO THAT!
+     */
+    const i32 messageLength = 32000;
+    char messageInput[messageLength];
     memset(messageInput, 0, sizeof(messageInput));
 
     /* Format original message.
      * NOTE: Oddly enough, MS's headers override the GCC/Clang va_list type with a "typedef char* va_list" in some
      * cases, and as a result throws a strange error here. The workaround for now is to just use __builtin_va_list,
-     * which is the type GCC/Clang's va_start expects. */
+     * which is the type GCC/Clang's va_start expects.
+     */
     __builtin_va_list argPtr;
     va_start(argPtr, message);
-    vsnprintf(messageInput, 32000, message, argPtr);
+    vsnprintf(messageInput, messageLength, message, argPtr);
     va_end(argPtr);
 
-    char outMessage[32000];
-    sprintf(outMessage, "%s%s\n", level_strings[level], messageInput);
+    char outMessage[messageLength];
+    sprintf(outMessage, "%s%s\n", levelStrings[level], messageInput);
 
-    /* platform-specific output. */
-    printf("%s", outMessage);
+    /* Platform-specific output. */
+    if (isError) {
+        platformConsoleWriteError(outMessage, level);
+    } else {
+        platformConsoleWrite(outMessage, level);
+    }
 }
 
 void reportAssertionFailure(const char *expression, const char *message,
