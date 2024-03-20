@@ -81,7 +81,7 @@ b8 platformStartup(platformState *platformState, const char *applicationName,
                        XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
     /* Values to be sent over XCB (bg colour, events) */
-    u32 valueList[] = {state->screen->blackPixel, eventValues};
+    u32 valueList[] = {state->screen->black_pixel, eventValues};
 
     /* Create the window */
     xcb_void_cookie_t cookie = xcb_create_window(state->connection,
@@ -92,8 +92,8 @@ b8 platformStartup(platformState *platformState, const char *applicationName,
                                                  valueList);
 
     xcb_change_property(state->connection, XCB_PROP_MODE_REPLACE, state->window,
-                        XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, strlen(application_name),
-                        application_name);
+                        XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, strlen(applicationName),
+                        applicationName);
 
     /* Tell the server to notify when the window manager
      * attempts to destroy the window.
@@ -113,7 +113,7 @@ b8 platformStartup(platformState *platformState, const char *applicationName,
     state->wmProtocols = wmProtocolsReply->atom;
 
     xcb_change_property(state->connection, XCB_PROP_MODE_REPLACE, state->window,
-                        wm_protocols_reply->atom, 4, 32, 1, &wmDeleteReply->atom);
+                        wmProtocolsReply->atom, 4, 32, 1, &wmDeleteReply->atom);
 
     /* Map the window to the screen */
     xcb_map_window(state->connection, state->window);
@@ -211,7 +211,7 @@ void platformConsoleWriteError(const char* message, u8 colour) {
 
 f64 platformGetAbsoluteTime() {
     struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    clock_gettime(1, &now);
 
     return now.tv_sec + now.tv_nsec * 0.000000001;
 }
