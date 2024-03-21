@@ -9,7 +9,7 @@ cFilenames=$(find . -type f -name "*.c")
 
 # echo "Files:" $cFilenames
 
-assembly="testbed"
+assembly="editor"
 compilerFlags="-g -fdeclspec -fPIC" 
 # -fms-extensions 
 # -Wall -Werror
