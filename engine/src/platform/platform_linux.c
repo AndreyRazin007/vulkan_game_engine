@@ -49,7 +49,7 @@ b8 platformStartup(platformState *platformState, const char *applicationName,
     if (xcb_connection_has_error(state->connection)) {
         FFATAL("Failed to connect to X server via XCB.");
 
-        return FALSE;
+        return false;
     }
 
     /* Get data from the X server */
@@ -123,10 +123,10 @@ b8 platformStartup(platformState *platformState, const char *applicationName,
     if (streamResult <= 0) {
         FFATAL("An error occurred when flusing the stream: %d", streamResult);
 
-        return FALSE;
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 void platformShutdown(platformState *platformState) {
@@ -146,7 +146,7 @@ b8 platformPumpMessages(platformState *platformState) {
     xcb_generic_event_t *event;
     xcb_client_message_event_t *clientMessage;
 
-    b8 quitFlagged = FALSE;
+    b8 quitFlagged = false;
 
     /* Poll for events until null is returned. */
     while (event != 0) {
@@ -171,7 +171,7 @@ b8 platformPumpMessages(platformState *platformState) {
 
                 /* Window close */
                 if (clientMessage->data.data32[0] == state->wmDeleteWindow) {
-                    quitFlagged = TRUE;
+                    quitFlagged = true;
                 }
             } break;
             default:
@@ -187,15 +187,19 @@ b8 platformPumpMessages(platformState *platformState) {
 void *platformAllocate(u64 size, b8 aligned) {
     return malloc(size);
 }
+
 void platformFree(void *block, b8 aligned) {
     free(block);
 }
+
 void *platformZeroMemory(void *block, u64 size) {
     return memset(block, 0, size);
 }
+
 void *platformCopyMemory(void *dest, const void *source, u64 size) {
     return memcpy(dest, source, size);
 }
+
 void *platformSetMemory(void *dest, i32 value, u64 size) {
     return memset(dest, value, size);
 }
@@ -204,6 +208,7 @@ void platformConsoleWrite(const char *message, u8 colour) {
     const char *colourStrings[] = {"0;41", "1;31", "1;33", "1;32", "1;34", "1;30"};
     printf("\033[%sm%s\033[0m", colourStrings[colour], message);
 }
+
 void platformConsoleWriteError(const char* message, u8 colour) {
     const char *colourStrings[] = {"0;41", "1;31", "1;33", "1;32", "1;34", "1;30"};
     printf("\033[%sm%s\033[0m", colourStrings[colour], message);

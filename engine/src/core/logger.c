@@ -1,28 +1,24 @@
 #include "logger.h"
 #include "asserts.h"
-#include "platform/platform.h"
+#include "../platform/platform.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
 b8 initializeLogging() {
-    return TRUE;
+    return true;
 }
 
 void shutdownLogging() {}
 
 void logOutput(logLevel level, const char *message, ...) {
-    const char *levelStrings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARNING]: ", "[INFO]: ", "[DEBUG]: ", "[TRACE]: "};
+    const char *levelStrings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARN]:  ", "[INFO]:  ", "[DEBUG]: ", "[TRACE]: "};
+    b8 isError = level < LOG_LEVEL_WARNING;
 
-    b8 isError = level < 2;
-
-    /* Technically imposes a 32k character limit on a single log entry, but...
-     * DON'T DO THAT!
-     */
     const i32 messageLength = 32000;
-    char messageInput[messageLength];
-    memset(messageInput, 0, sizeof(messageInput));
+    char inputMessage[messageLength];
+    memset(inputMessage, 0, sizeof(inputMessage));
 
     /* Format original message.
      * NOTE: Oddly enough, MS's headers override the GCC/Clang va_list type with a "typedef char* va_list" in some
@@ -31,11 +27,11 @@ void logOutput(logLevel level, const char *message, ...) {
      */
     __builtin_va_list argPtr;
     va_start(argPtr, message);
-    vsnprintf(messageInput, messageLength, message, argPtr);
+    vsnprintf(inputMessage, messageLength, message, argPtr);
     va_end(argPtr);
 
     char outMessage[messageLength];
-    sprintf(outMessage, "%s%s\n", levelStrings[level], messageInput);
+    sprintf(outMessage, "%s%s\n", levelStrings[level], inputMessage);
 
     /* Platform-specific output. */
     if (isError) {

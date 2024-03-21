@@ -6,20 +6,15 @@ typedef struct platformState {
     void *internalState;
 } platformState;
 
-FAPI b8 platformStartup(
-    platformState *platformState,
-    const char *applicationName,
-    i32 x,
-    i32 y,
-    i32 width,
-    i32 height);
+b8 platformStartup(platformState* plat_state, const char* applicationName,
+                   i32 x, i32 y, i32 width, i32 height);
 
-FAPI void platformShutdown(platformState *platformState);
+void platformShutdown(platformState* platformState);
 
-FAPI b8 platformPumpMessages(platformState *platformState);
+b8 platformPumpMessages(platformState* platformState);
 
-void *platformAllocate(u64 size, b8 aligned);
-void platformFree(void *block, b8 aligned);
+FAPI void *platformAllocate(u64 size, b8 aligned);
+FAPI void platformFree(void *block, b8 aligned);
 void *platformZeroMemory(void *block, u64 size);
 void *platformCopyMemory(void *dest, const void *source, u64 size);
 void *platformSetMemory(void *dest, i32 value, u64 size);

@@ -1,4 +1,4 @@
-#include "platform/platform.h"
+#include "platform.h"
 
 /* Windows platform layer. */
 #if FPLATFORM_WINDOWS
@@ -14,17 +14,15 @@ typedef struct internalState {
     HWND hwnd;
 } internalState;
 
-/* Clock */
 static f64 clockFrequency;
 static LARGE_INTEGER startTime;
 
-LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK win32ProcessMessage(HWND hwnd, u32 message, WPARAM wParam, LPARAM lParam);
 
-b8 platformStartup(platformState *platformState,
-                   const char *applicationName,
+b8 platformStartup(platformState *platformState, const char *applicationName,
                    i32 x, i32 y, i32 width, i32 height) {
     platformState->internalState = malloc(sizeof(internalState));
-    internalState *state = (internalState *)platformState->internalState;
+    internalState *state = (internalState*)platformState->internalState;
 
     state->hInstance = GetModuleHandleA(0);
 
@@ -33,7 +31,7 @@ b8 platformStartup(platformState *platformState,
     WNDCLASSA wndClassA;
     memset(&wndClassA, 0, sizeof(wndClassA));
     wndClassA.style = CS_DBLCLKS;
-    wndClassA.lpfnWndProc = win32_process_message;
+    wndClassA.lpfnWndProc = win32ProcessMessage;
     wndClassA.cbClsExtra = 0;
     wndClassA.cbWndExtra = 0;
     wndClassA.hInstance = state->hInstance;
@@ -45,10 +43,10 @@ b8 platformStartup(platformState *platformState,
     if (!RegisterClassA(&wndClassA)) {
         MessageBoxA(0, "Window registration failed", "Error", MB_ICONEXCLAMATION | MB_OK);
 
-        return FALSE;
+        return false;
     }
 
-    /* Create window */
+    /* Create window. */
     u32 clientX = x;
     u32 clientY = y;
     u32 clientWidth = width;
@@ -78,37 +76,31 @@ b8 platformStartup(platformState *platformState,
     windowWidth += border_rect.right - border_rect.left;
     windowHeight += border_rect.bottom - border_rect.top;
 
-    HWND handle = CreateWindowExA(windowExStyle, "FreakWindowClass",
-                                  applicationName, windowStyle,
+    HWND handle = CreateWindowExA(windowExStyle, "FreakWindowClass", applicationName,
+                                  windowStyle,
                                   windowX, windowY, windowWidth, windowHeight,
                                   0, 0, state->hInstance, 0);
 
     if (handle == 0) {
         MessageBoxA(NULL, "Window creation failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
-
         FFATAL("Window creation failed!");
 
-        return FALSE;
+        return false;
     } else {
         state->hwnd = handle;
     }
 
-    /* Show the window */
     b32 shouldActivate = 1;
     i32 showWindowCommandFlags = shouldActivate ? SW_SHOW : SW_SHOWNOACTIVATE;
 
-    /* If initially minimized, use SW_MINIMIZE : SW_SHOWMINNOACTIVE;
-     * If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE
-     */
     ShowWindow(state->hwnd, showWindowCommandFlags);
 
-    /* Clock setup */
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
     clockFrequency = 1.0 / (f64)frequency.QuadPart;
     QueryPerformanceCounter(&startTime);
 
-    return TRUE;
+    return true;
 }
 
 void platformShutdown(platformState *platformState) {
@@ -129,7 +121,7 @@ b8 platformPumpMessages(platformState *platformState) {
         DispatchMessageA(&message);
     }
 
-    return TRUE;
+    return true;
 }
 
 void *platformAllocate(u64 size, b8 aligned) {
@@ -155,43 +147,46 @@ void *platformSetMemory(void *dest, i32 value, u64 size) {
 void platformConsoleWrite(const char *message, u8 colour) {
     HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
     static u8 levels[6] = {64, 4, 6, 2, 1, 8};
+
     SetConsoleTextAttribute(console_handle, levels[colour]);
     OutputDebugStringA(message);
+
     u64 length = strlen(message);
     LPDWORD number_written = 0;
+
     WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), message, (DWORD)length, number_written, 0);
 }
 
 void platformConsoleWriteError(const char *message, u8 colour) {
     HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
     static u8 levels[6] = {64, 4, 6, 2, 1, 8};
+
     SetConsoleTextAttribute(console_handle, levels[colour]);
     OutputDebugStringA(message);
+
     u64 length = strlen(message);
     LPDWORD number_written = 0;
+
     WriteConsoleA(GetStdHandle(STD_ERROR_HANDLE), message, (DWORD)length, number_written, 0);
 }
 
 f64 platformGetAbsoluteTime() {
-    LARGE_INTEGER now_time;
-    QueryPerformanceCounter(&now_time);
+    LARGE_INTEGER nowTime;
 
-    return (f64)now_time.QuadPart * clockFrequency;
+    QueryPerformanceCounter(&nowTime);
+
+    return (f64)nowTime.QuadPart * clockFrequency;
 }
 
 void platformSleep(u64 ms) {
     Sleep(ms);
 }
 
-LRESULT CALLBACK win32_process_message(HWND hwnd, u32 message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK win32ProcessMessage(HWND hwnd, u32 message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_ERASEBKGND:
-            /* Notify the OS that erasing will be handled by the application
-             * to prevent flicker.
-             */
             return 1;
         case WM_CLOSE:
-            /* Fire an event for the application to quit. */
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);

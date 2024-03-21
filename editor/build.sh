@@ -2,7 +2,7 @@
 # Build script for testbed
 set echo on
 
-mkdir -p ../build_linux
+mkdir -p ../bin
 
 # Get a list of all the .c files.
 cFilenames=$(find . -type f -name "*.c")
@@ -14,9 +14,9 @@ compilerFlags="-g -fdeclspec -fPIC"
 # -fms-extensions 
 # -Wall -Werror
 includeFlags="-Isrc -I../engine/src/"
-linkerFlags="-L../build_linux/ -lengine -Wl,-rpath,."
-defines="-D_DEBUG -DFIMPORT"
+linkerFlags="-L../bin/ -lengine -Wl,-rpath,."
+defines="-D_DEBUG -DKIMPORT"
 
 echo "Building $assembly..."
-echo clang $cFilenames $compilerFlags -o ../build_linux/$assembly $defines $includeFlags $linkerFlags
-clang $cFilenames $compilerFlags -o ../build_linux/$assembly $defines $includeFlags $linkerFlags
+echo clang $cFilenames $compilerFlags -o ../bin/$assembly $defines $includeFlags $linkerFlags
+clang $cFilenames $compilerFlags -o ../bin/$assembly $defines $includeFlags $linkerFlags

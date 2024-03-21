@@ -1,9 +1,9 @@
 @ECHO OFF
 REM Build Everything
 
-ECHO "Building everything..."
-
 MD build_windows
+
+ECHO "Building everything..."
 
 PUSHD engine
 CALL build.bat
