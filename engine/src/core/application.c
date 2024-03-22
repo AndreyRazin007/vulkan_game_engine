@@ -55,7 +55,7 @@ b8 applicationCreate(game *gameInstance) {
         return false;
     }
 
-    appState.gameInstance->on_resize(appState.gameInstance, appState.width, appState.height);
+    appState.gameInstance->onResize(appState.gameInstance, appState.width, appState.height);
 
     initialized = true;
     

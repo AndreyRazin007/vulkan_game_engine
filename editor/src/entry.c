@@ -15,7 +15,7 @@ b8 createGame(game *outGame) {
     outGame->update = gameUpdate;
     outGame->render = gameRender;
     outGame->initialize = gameInitialize;
-    outGame->on_resize = gameOnResize;
+    outGame->onResize = gameOnResize;
 
     /* Create the game state. */
     outGame->state = platformAllocate(sizeof(gameState), false);

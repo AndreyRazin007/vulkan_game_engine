@@ -20,7 +20,7 @@ typedef struct game {
     b8 (*render)(struct game *gameInstance, f32 deltaTime);
 
     /* Function pointer to handle resizes, if applicable. */
-    void (*on_resize)(struct game *gameInstance, u32 width, u32 height);
+    void (*onResize)(struct game *gameInstance, u32 width, u32 height);
 
     /* Game-specific game state. Created and managed by the game. */
     void *state;

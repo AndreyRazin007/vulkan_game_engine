@@ -10,36 +10,37 @@ extern b8 createGame(game *outGame);
 /*
  * The main entry point of the application.
  */
-int main(void) {
-    /* Request the game instance from the application. */
-    game gameInstance;
 
-    if (!createGame(&gameInstance)) {
-        FFATAL("Could not create game!");
+// int main(void) {
+//     /* Request the game instance from the application. */
+//     game gameInstance;
 
-        return -1;
-    }
+//     if (!createGame(&gameInstance)) {
+//         FFATAL("Could not create game!");
 
-    /* Ensure the function pointers exist. */
-    if (!gameInstance.render || !gameInstance.update || !gameInstance.initialize || !gameInstance.on_resize) {
-        FFATAL("The game's function pointers must be assigned!");
+//         return -1;
+//     }
 
-        return -2;
-    }
+//     /* Ensure the function pointers exist. */
+//     if (!gameInstance.render || !gameInstance.update || !gameInstance.initialize || !gameInstance.onResize) {
+//         FFATAL("The game's function pointers must be assigned!");
 
-    /* Initialization. */
-    if (!applicationCreate(&gameInstance)) {
-        FINFO("Application failed to create!.");
+//         return -2;
+//     }
 
-        return 1;
-    }
+//     /* Initialization. */
+//     if (!applicationCreate(&gameInstance)) {
+//         FINFO("Application failed to create!.");
 
-    /* Begin the game loop. */
-    if(!applicationRun()) {
-        FINFO("Application did not shutdown gracefully.");
+//         return 1;
+//     }
 
-        return 2;
-    }
+//     /* Begin the game loop. */
+//     if(!applicationRun()) {
+//         FINFO("Application did not shutdown gracefully.");
 
-    return 0;
-}
+//         return 2;
+//     }
+
+//     return 0;
+// }
