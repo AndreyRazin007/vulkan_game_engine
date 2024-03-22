@@ -13,8 +13,8 @@ void platformShutdown(platformState* platformState);
 
 b8 platformPumpMessages(platformState* platformState);
 
-FAPI void *platformAllocate(u64 size, b8 aligned);
-FAPI void platformFree(void *block, b8 aligned);
+void *platformAllocate(u64 size, b8 aligned);
+void platformFree(void *block, b8 aligned);
 void *platformZeroMemory(void *block, u64 size);
 void *platformCopyMemory(void *dest, const void *source, u64 size);
 void *platformSetMemory(void *dest, i32 value, u64 size);

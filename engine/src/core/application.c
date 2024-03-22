@@ -1,9 +1,8 @@
 #include "application.h"
 #include "game_types.h"
-
 #include "logger.h"
-
 #include "platform/platform.h"
+#include "core/memory.h"
 
 typedef struct applicationState {
     game *gameInstance;
@@ -58,17 +57,19 @@ b8 applicationCreate(game *gameInstance) {
     appState.gameInstance->onResize(appState.gameInstance, appState.width, appState.height);
 
     initialized = true;
-    
+
     return true;
 }
 
 b8 applicationRun() {
+    FINFO(getMemoryUsageStr());
+
     while (appState.isRunning) {
-        if(!platformPumpMessages(&appState.platform)) {
+        if (!platformPumpMessages(&appState.platform)) {
             appState.isRunning = false;
         }
 
-        if(!appState.isSuspended) {
+        if (!appState.isSuspended) {
             if (!appState.gameInstance->update(appState.gameInstance, (f32)0)) {
                 FFATAL("Game update failed, shutting down.");
                 appState.isRunning = false;

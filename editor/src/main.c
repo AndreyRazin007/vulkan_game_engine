@@ -1,9 +1,12 @@
 #include "core/application.h"
 #include "core/logger.h"
+#include "core/memory.h"
 #include "game_types.h"
 #include "entry.h"
 
 int main(void) {
+    initializeMemory();
+
     /* Request the game instance from the application. */
     game gameInstance;
 
@@ -33,6 +36,8 @@ int main(void) {
 
         return 2;
     }
+
+    shutdownMemory();
 
     return 0;
 }
