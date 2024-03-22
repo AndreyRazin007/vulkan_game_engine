@@ -1,7 +1,11 @@
 @ECHO OFF
 REM Build Everything
 
-MD build_windows
+IF EXIST "build_windows" (
+    ECHO "The folder or subfolder already exists."
+) ELSE (
+    MD build_windows
+)
 
 ECHO "Building everything..."
 
