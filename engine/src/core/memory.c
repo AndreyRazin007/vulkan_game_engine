@@ -1,6 +1,7 @@
 #include "memory.h"
 
 #include "core/logger.h"
+#include "core/string.h"
 #include "platform/platform.h"
 
 /* Custom string lib. */
@@ -109,7 +110,7 @@ char *getMemoryUsageStr() {
                               memoryTagStrings[i], amount, unit);
         offset += length;
     }
-    char *outString = _strdup(buffer);
+    char *outString = stringDuplicate(buffer);
 
     return outString;
 }
