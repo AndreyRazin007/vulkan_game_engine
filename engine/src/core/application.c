@@ -1,10 +1,16 @@
 #include "application.h"
+
 #include "game_types.h"
 #include "logger.h"
+
 #include "platform/platform.h"
+
 #include "core/memory.h"
 #include "core/event.h"
 #include "core/input.h"
+#include "core/clock.h"
+
+#include "renderer/renderer_frontend.h"
 
 typedef struct applicationState {
     game *gameInstance;
@@ -13,6 +19,7 @@ typedef struct applicationState {
     platformState platform;
     i16 width;
     i16 height;
+    clock clock;
     f64 lastTime;
 } applicationState;
 
@@ -64,6 +71,13 @@ b8 applicationCreate(game *gameInstance) {
         return false;
     }
 
+    /* Renderer startup. */
+    if (!rendererInitialize(gameInstance->appConfig.name, &appState.platform)) {
+        FFATAL("Failed to initialize renderer. Aborting application.");
+
+        return false;
+    }
+
     /* Initialize the game. */
     if (!appState.gameInstance->initialize(appState.gameInstance)) {
         FFATAL("Game failed to initialize.");
@@ -79,6 +93,13 @@ b8 applicationCreate(game *gameInstance) {
 }
 
 b8 applicationRun() {
+    clockStart(&appState.clock);
+    clockUpdate(&appState.clock);
+    appState.lastTime = appState.clock.elapsed;
+    f64 runningTime = 0;
+    u8 frameCount = 0;
+    f64 targetFrameSeconds = 1.0f / 60;
+
     FINFO(getMemoryUsageStr());
 
     while (appState.isRunning) {
@@ -87,20 +108,54 @@ b8 applicationRun() {
         }
 
         if (!appState.isSuspended) {
-            if (!appState.gameInstance->update(appState.gameInstance, (f32)0)) {
+            /* Update clock and get delta time. */
+            clockUpdate(&appState.clock);
+            f64 currentTime = appState.clock.elapsed;
+            f64 delta = (currentTime - appState.lastTime);
+            f64 frameStartTime = platformGetAbsoluteTime();
+
+            if (!appState.gameInstance->update(appState.gameInstance, (f32)delta)) {
                 FFATAL("Game update failed, shutting down.");
                 appState.isRunning = false;
+
                 break;
             }
 
             /* Call the game's render routine. */
-            if (!appState.gameInstance->render(appState.gameInstance, (f32)0)) {
+            if (!appState.gameInstance->render(appState.gameInstance, (f32)delta)) {
                 FFATAL("Game render failed, shutting down.");
                 appState.isRunning = false;
+
                 break;
             }
 
-            inputUpdate(0);
+            /* Refactor packet creation. */
+            renderPacket packet;
+            packet.deltaTime = delta;
+            rendererDrawFrame(&packet);
+
+            /* Figure out how long the frame took and, if below. */
+            f64 frameEndTime = platformGetAbsoluteTime();
+            f64 frameElapsedTime = frameEndTime - frameStartTime;
+            runningTime += frameElapsedTime;
+            f64 remainingSeconds = targetFrameSeconds - frameElapsedTime;
+
+            if (remainingSeconds > 0) {
+                u64 remainingMessage = (remainingSeconds * 1000);
+
+                /* If there is time left, give it back to the OS. */
+                b8 limitFrames = false;
+                if (remainingMessage > 0 && limitFrames) {
+                    platformSleep(remainingMessage - 1);
+                }
+
+                ++frameCount;
+            }
+
+            inputUpdate(delta);
+
+            /* Update last time. */
+            appState.lastTime = currentTime;
         }
     }
 
@@ -113,6 +168,8 @@ b8 applicationRun() {
 
     eventShutdown();
     inputShutdown();
+
+    rendererShutdown();
 
     platformShutdown(&appState.platform);
 

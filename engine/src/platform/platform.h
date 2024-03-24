@@ -6,7 +6,7 @@ typedef struct platformState {
     void *internalState;
 } platformState;
 
-b8 platformStartup(platformState* plat_state, const char* applicationName,
+b8 platformStartup(platformState* platformState, const char* applicationName,
                    i32 x, i32 y, i32 width, i32 height);
 
 void platformShutdown(platformState* platformState);
