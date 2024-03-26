@@ -146,6 +146,7 @@ void input_initialize();
 void input_shutdown();
 void input_update(f64 delta_time);
 
+// keyboard input
 KAPI b8 input_is_key_down(keys key);
 KAPI b8 input_is_key_up(keys key);
 KAPI b8 input_was_key_down(keys key);
@@ -153,6 +154,7 @@ KAPI b8 input_was_key_up(keys key);
 
 void input_process_key(keys key, b8 pressed);
 
+// mouse input
 KAPI b8 input_is_button_down(buttons button);
 KAPI b8 input_is_button_up(buttons button);
 KAPI b8 input_was_button_down(buttons button);

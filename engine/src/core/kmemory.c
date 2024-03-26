@@ -4,6 +4,7 @@
 #include "core/kstring.h"
 #include "platform/platform.h"
 
+// TODO: Custom string lib
 #include <string.h>
 #include <stdio.h>
 
@@ -48,6 +49,7 @@ void* kallocate(u64 size, memory_tag tag) {
     stats.total_allocated += size;
     stats.tagged_allocations[tag] += size;
 
+    // TODO: Memory alignment
     void* block = platform_allocate(size, FALSE);
     platform_zero_memory(block, size);
     return block;
@@ -61,6 +63,7 @@ void kfree(void* block, u64 size, memory_tag tag) {
     stats.total_allocated -= size;
     stats.tagged_allocations[tag] -= size;
 
+    // TODO: Memory alignment
     platform_free(block, FALSE);
 }
 

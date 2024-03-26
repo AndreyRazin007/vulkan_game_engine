@@ -2,6 +2,7 @@
 
 #include "defines.h"
 
+// Disable assertions by commenting out the below line.
 #define KASSERTIONS_ENABLED
 
 #ifdef KASSERTIONS_ENABLED
@@ -42,11 +43,11 @@ KAPI void report_assertion_failure(const char* expression, const char* message, 
         }                                                            \
     }
 #else
-#define KASSERT_DEBUG(expr)
+#define KASSERT_DEBUG(expr)  // Does nothing at all
 #endif
 
 #else
-#define KASSERT(expr)
-#define KASSERT_MSG(expr, message)
-#define KASSERT_DEBUG(expr)
+#define KASSERT(expr)               // Does nothing at all
+#define KASSERT_MSG(expr, message)  // Does nothing at all
+#define KASSERT_DEBUG(expr)         // Does nothing at all
 #endif

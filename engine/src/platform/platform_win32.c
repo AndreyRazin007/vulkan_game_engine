@@ -1,12 +1,15 @@
 #include "platform/platform.h"
 
+// Windows platform layer.
 #if KPLATFORM_WINDOWS
 
 #include "core/logger.h"
 #include "core/input.h"
 
+#include "containers/darray.h"
+
 #include <windows.h>
-#include <windowsx.h>
+#include <windowsx.h>  // param input extraction
 #include <stdlib.h>
 
 typedef struct internal_state {
@@ -14,6 +17,7 @@ typedef struct internal_state {
     HWND hwnd;
 } internal_state;
 
+// Clock
 static f64 clock_frequency;
 static LARGE_INTEGER start_time;
 
@@ -31,17 +35,18 @@ b8 platform_startup(
 
     state->h_instance = GetModuleHandleA(0);
 
+    // Setup and register window class.
     HICON icon = LoadIcon(state->h_instance, IDI_APPLICATION);
     WNDCLASSA wc;
     memset(&wc, 0, sizeof(wc));
-    wc.style = CS_DBLCLKS;
+    wc.style = CS_DBLCLKS;  // Get double-clicks
     wc.lpfnWndProc = win32_process_message;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = state->h_instance;
     wc.hIcon = icon;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = NULL;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);  // NULL; // Manage the cursor manually
+    wc.hbrBackground = NULL;                   // Transparent
     wc.lpszClassName = "kohi_window_class";
 
     if (!RegisterClassA(&wc)) {
@@ -49,6 +54,7 @@ b8 platform_startup(
         return FALSE;
     }
 
+    // Create window
     u32 client_x = x;
     u32 client_y = y;
     u32 client_width = width;
@@ -66,12 +72,15 @@ b8 platform_startup(
     window_style |= WS_MINIMIZEBOX;
     window_style |= WS_THICKFRAME;
 
+    // Obtain the size of the border.
     RECT border_rect = {0, 0, 0, 0};
     AdjustWindowRectEx(&border_rect, window_style, 0, window_ex_style);
 
+    // In this case, the border rectangle is negative.
     window_x += border_rect.left;
     window_y += border_rect.top;
 
+    // Grow by the size of the OS border.
     window_width += border_rect.right - border_rect.left;
     window_height += border_rect.bottom - border_rect.top;
 
@@ -89,10 +98,14 @@ b8 platform_startup(
         state->hwnd = handle;
     }
 
-    b32 should_activate = 1;
+    // Show the window
+    b32 should_activate = 1;  // TODO: if the window should not accept input, this should be false.
     i32 show_window_command_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
+    // If initially minimized, use SW_MINIMIZE : SW_SHOWMINNOACTIVE;
+    // If initially maximized, use SW_SHOWMAXIMIZED : SW_MAXIMIZE
     ShowWindow(state->hwnd, show_window_command_flags);
 
+    // Clock setup
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
     clock_frequency = 1.0 / (f64)frequency.QuadPart;
@@ -102,6 +115,7 @@ b8 platform_startup(
 }
 
 void platform_shutdown(platform_state *plat_state) {
+    // Simply cold-cast to the known type.
     internal_state *state = (internal_state *)plat_state->internal_state;
 
     if (state->hwnd) {
@@ -142,6 +156,7 @@ void *platform_set_memory(void *dest, i32 value, u64 size) {
 
 void platform_console_write(const char *message, u8 colour) {
     HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // FATAL,ERROR,WARN,INFO,DEBUG,TRACE
     static u8 levels[6] = {64, 4, 6, 2, 1, 8};
     SetConsoleTextAttribute(console_handle, levels[colour]);
     OutputDebugStringA(message);
@@ -152,6 +167,7 @@ void platform_console_write(const char *message, u8 colour) {
 
 void platform_console_write_error(const char *message, u8 colour) {
     HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);
+    // FATAL,ERROR,WARN,INFO,DEBUG,TRACE
     static u8 levels[6] = {64, 4, 6, 2, 1, 8};
     SetConsoleTextAttribute(console_handle, levels[colour]);
     OutputDebugStringA(message);
@@ -170,34 +186,53 @@ void platform_sleep(u64 ms) {
     Sleep(ms);
 }
 
+void platform_get_required_extension_names(const char ***names_darray) {
+    darray_push(*names_darray, &"VK_KHR_win32_surface");
+}
+
 LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARAM l_param) {
     switch (msg) {
         case WM_ERASEBKGND:
+            // Notify the OS that erasing will be handled by the application to prevent flicker.
             return 1;
         case WM_CLOSE:
+            // TODO: Fire an event for the application to quit.
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
-        case WM_SIZE: {} break;
+        case WM_SIZE: {
+            // Get the updated size.
+            // RECT r;
+            // GetClientRect(hwnd, &r);
+            // u32 width = r.right - r.left;
+            // u32 height = r.bottom - r.top;
+
+            // TODO: Fire an event for window resize.
+        } break;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYUP: {
+            // Key pressed/released
             b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
             keys key = (u16)w_param;
 
+            // Pass to the input subsystem for processing.
             input_process_key(key, pressed);
         } break;
         case WM_MOUSEMOVE: {
+            // Mouse move
             i32 x_position = GET_X_LPARAM(l_param);
             i32 y_position = GET_Y_LPARAM(l_param);
             
+            // Pass over to the input subsystem.
             input_process_mouse_move(x_position, y_position);
         } break;
         case WM_MOUSEWHEEL: {
             i32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
             if (z_delta != 0) {
+                // Flatten the input to an OS-independent (-1, 1)
                 z_delta = (z_delta < 0) ? -1 : 1;
                 input_process_mouse_wheel(z_delta);
             }
@@ -225,6 +260,7 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
                     break;
             }
 
+            // Pass over to the input subsystem.
             if (mouse_button != BUTTON_MAX_BUTTONS) {
                 input_process_button(mouse_button, pressed);
             }
@@ -234,4 +270,4 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, u32 msg, WPARAM w_param, LPARA
     return DefWindowProcA(hwnd, msg, w_param, l_param);
 }
 
-#endif
+#endif  // KPLATFORM_WINDOWS
