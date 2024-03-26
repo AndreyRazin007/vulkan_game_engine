@@ -4,25 +4,19 @@
 
 struct game;
 
-/* Application configuration. */
-typedef struct applicationConfig {
-    /* Window starting position x axis, if applicable. */
-    i16 startPositionX;
+typedef struct application_config {
+    i16 start_pos_x;
 
-    /* Window starting position y axis, if applicable. */
-    i16 startPositionY;
+    i16 start_pos_y;
 
-    /* Window starting width, if applicable. */
-    i16 startWidth;
+    i16 start_width;
 
-    /* Window starting height, if applicable. */
-    i16 startHeight;
+    i16 start_height;
 
-    /* The application name used in windowing, if applicable. */
-    char *name;
-} applicationConfig;
+    char* name;
+} application_config;
 
 
-FAPI b8 applicationCreate(struct game *gameInstance);
+KAPI b8 application_create(struct game* game_inst);
 
-FAPI b8 applicationRun();
+KAPI b8 application_run();

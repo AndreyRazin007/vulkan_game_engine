@@ -142,26 +142,24 @@ typedef enum keys {
     KEYS_MAX_KEYS
 } keys;
 
-void inputInitialize();
-void inputShutdown();
-void inputUpdate(f64 deltaTime);
+void input_initialize();
+void input_shutdown();
+void input_update(f64 delta_time);
 
-/* Keyboard input. */
-FAPI b8 inputIsKeyDown(keys key);
-FAPI b8 inputIsKeyUp(keys key);
-FAPI b8 inputWasKeyDown(keys key);
-FAPI b8 inputWasKeyUp(keys key);
+KAPI b8 input_is_key_down(keys key);
+KAPI b8 input_is_key_up(keys key);
+KAPI b8 input_was_key_down(keys key);
+KAPI b8 input_was_key_up(keys key);
 
-void inputProcessKey(keys key, b8 pressed);
+void input_process_key(keys key, b8 pressed);
 
-/* Mouse input. */
-FAPI b8 inputIsButtonDown(buttons button);
-FAPI b8 inputIsButtonUp(buttons button);
-FAPI b8 inputWasButtonDown(buttons button);
-FAPI b8 inputWasButtonUp(buttons button);
-FAPI void inputGetMousePosition(i32 *x, i32 *y);
-FAPI void inputGetPreviousMousePosition(i32 *x, i32 *y);
+KAPI b8 input_is_button_down(buttons button);
+KAPI b8 input_is_button_up(buttons button);
+KAPI b8 input_was_button_down(buttons button);
+KAPI b8 input_was_button_up(buttons button);
+KAPI void input_get_mouse_position(i32* x, i32* y);
+KAPI void input_get_previous_mouse_position(i32* x, i32* y);
 
-void inputProcessButton(buttons button, b8 pressed);
-void inputProcessMouseMove(i16 x, i16 y);
-void inputProcessMouseWheel(i8 deltaZ);
+void input_process_button(buttons button, b8 pressed);
+void input_process_mouse_move(i16 x, i16 y);
+void input_process_mouse_wheel(i8 z_delta);

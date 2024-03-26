@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
-typedef struct vulkanContext {
+typedef struct vulkan_context {
     VkInstance instance;
-    VkAllocationCallbacks *allocator;
-} vulkanContext;
+    VkAllocationCallbacks* allocator;
+} vulkan_context;

@@ -10,12 +10,12 @@ IF EXIST "build_windows" (
 ECHO "Building everything..."
 
 PUSHD engine
-CALL build.bat
+CALL build_engine.bat
 POPD
 IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)
 
 PUSHD editor
-CALL build.bat
+CALL build_editor.bat
 POPD
 IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)
 

@@ -2,18 +2,17 @@
 
 #include <core/logger.h>
 
-b8 gameInitialize(game *gameInstance) {
-    FDEBUG("gameInitialize() called!");
-
-    return true;
+b8 game_initialize(game* game_inst) {
+    KDEBUG("game_initialize() called!");
+    return TRUE;
 }
 
-b8 gameUpdate(game *gameInstance, f32 deltaTime) {
-    return true;
+b8 game_update(game* game_inst, f32 delta_time) {
+    return TRUE;
 }
 
-b8 gameRender(game *gameInstance, f32 deltaTime) {
-    return true;
+b8 game_render(game* game_inst, f32 delta_time) {
+    return TRUE;
 }
 
-void gameOnResize(game *gameInstance, u32 width, u32 height) {}
+void game_on_resize(game* game_inst, u32 width, u32 height) {}

@@ -1,218 +1,196 @@
 #include "application.h"
-
 #include "game_types.h"
+
 #include "logger.h"
 
 #include "platform/platform.h"
-
-#include "core/memory.h"
+#include "core/kmemory.h"
 #include "core/event.h"
 #include "core/input.h"
 #include "core/clock.h"
 
 #include "renderer/renderer_frontend.h"
 
-typedef struct applicationState {
-    game *gameInstance;
-    b8 isRunning;
-    b8 isSuspended;
-    platformState platform;
+typedef struct application_state {
+    game* game_inst;
+    b8 is_running;
+    b8 is_suspended;
+    platform_state platform;
     i16 width;
     i16 height;
     clock clock;
-    f64 lastTime;
-} applicationState;
+    f64 last_time;
+} application_state;
 
-static b8 initialized = false;
-static applicationState appState;
+static b8 initialized = FALSE;
+static application_state app_state;
 
-/* Event handlers. */
-b8 applicationOnEvent(u16 code, void* sender, void* listenerInstance, eventContext context);
-b8 applicationOnKey(u16 code, void* sender, void* listenerInstance, eventContext context);
+b8 application_on_event(u16 code, void* sender, void* listener_inst, event_context context);
+b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context context);
 
-b8 applicationCreate(game *gameInstance) {
+b8 application_create(game* game_inst) {
     if (initialized) {
-        FERROR("applicationCreate called more than once.");
-
-        return false;
+        KERROR("application_create called more than once.");
+        return FALSE;
     }
 
-    appState.gameInstance = gameInstance;
+    app_state.game_inst = game_inst;
 
-    /* Initialize subsystems. */
-    initializeLogging();
-    inputInitialize();
+    initialize_logging();
+    input_initialize();
 
-    FFATAL("A test message: %f", 3.14f);
-    FERROR("A test message: %f", 3.14f);
-    FWARNING("A test message: %f", 3.14f);
-    FINFO("A test message: %f", 3.14f);
-    FDEBUG("A test message: %f", 3.14f);
-    FTRACE("A test message: %f", 3.14f);
+    KFATAL("A test message: %f", 3.14f);
+    KERROR("A test message: %f", 3.14f);
+    KWARN("A test message: %f", 3.14f);
+    KINFO("A test message: %f", 3.14f);
+    KDEBUG("A test message: %f", 3.14f);
+    KTRACE("A test message: %f", 3.14f);
 
-    appState.isRunning = true;
-    appState.isSuspended = false;
+    app_state.is_running = TRUE;
+    app_state.is_suspended = FALSE;
 
-    if(!eventInitialize()) {
-        FERROR("Event system failed initialization. Application cannot continue.");
-
-        return false;
+    if(!event_initialize()) {
+        KERROR("Event system failed initialization. Application cannot continue.");
+        return FALSE;
     }
 
-    eventRegister(EVENT_CODE_APPLICATION_QUIT, 0, applicationOnEvent);
-    eventRegister(EVENT_CODE_KEY_PRESSED, 0, applicationOnKey);
-    eventRegister(EVENT_CODE_KEY_RELEASED, 0, applicationOnKey);
+    event_register(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    event_register(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    event_register(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
 
-    if (!platformStartup(&appState.platform, gameInstance->appConfig.name,
-                         gameInstance->appConfig.startPositionX,
-                         gameInstance->appConfig.startPositionY,
-                         gameInstance->appConfig.startWidth,
-                         gameInstance->appConfig.startHeight)) {
-        return false;
+    if (!platform_startup(
+            &app_state.platform,
+            game_inst->app_config.name,
+            game_inst->app_config.start_pos_x,
+            game_inst->app_config.start_pos_y,
+            game_inst->app_config.start_width,
+            game_inst->app_config.start_height)) {
+        return FALSE;
     }
 
-    /* Renderer startup. */
-    if (!rendererInitialize(gameInstance->appConfig.name, &appState.platform)) {
-        FFATAL("Failed to initialize renderer. Aborting application.");
-
-        return false;
+    if (!renderer_initialize(game_inst->app_config.name, &app_state.platform)) {
+        KFATAL("Failed to initialize renderer. Aborting application.");
+        return FALSE;
     }
 
-    /* Initialize the game. */
-    if (!appState.gameInstance->initialize(appState.gameInstance)) {
-        FFATAL("Game failed to initialize.");
-
-        return false;
+    if (!app_state.game_inst->initialize(app_state.game_inst)) {
+        KFATAL("Game failed to initialize.");
+        return FALSE;
     }
 
-    appState.gameInstance->onResize(appState.gameInstance, appState.width, appState.height);
+    app_state.game_inst->on_resize(app_state.game_inst, app_state.width, app_state.height);
 
-    initialized = true;
+    initialized = TRUE;
 
-    return true;
+    return TRUE;
 }
 
-b8 applicationRun() {
-    clockStart(&appState.clock);
-    clockUpdate(&appState.clock);
-    appState.lastTime = appState.clock.elapsed;
-    f64 runningTime = 0;
-    u8 frameCount = 0;
-    f64 targetFrameSeconds = 1.0f / 60;
+b8 application_run() {
+    clock_start(&app_state.clock);
+    clock_update(&app_state.clock);
+    app_state.last_time = app_state.clock.elapsed;
+    f64 running_time = 0;
+    u8 frame_count = 0;
+    f64 target_frame_seconds = 1.0f / 60;
 
-    FINFO(getMemoryUsageStr());
+    KINFO(get_memory_usage_str());
 
-    while (appState.isRunning) {
-        if (!platformPumpMessages(&appState.platform)) {
-            appState.isRunning = false;
+    while (app_state.is_running) {
+        if (!platform_pump_messages(&app_state.platform)) {
+            app_state.is_running = FALSE;
         }
 
-        if (!appState.isSuspended) {
-            /* Update clock and get delta time. */
-            clockUpdate(&appState.clock);
-            f64 currentTime = appState.clock.elapsed;
-            f64 delta = (currentTime - appState.lastTime);
-            f64 frameStartTime = platformGetAbsoluteTime();
+        if (!app_state.is_suspended) {
+            clock_update(&app_state.clock);
+            f64 current_time = app_state.clock.elapsed;
+            f64 delta = (current_time - app_state.last_time);
+            f64 frame_start_time = platform_get_absolute_time();
 
-            if (!appState.gameInstance->update(appState.gameInstance, (f32)delta)) {
-                FFATAL("Game update failed, shutting down.");
-                appState.isRunning = false;
-
+            if (!app_state.game_inst->update(app_state.game_inst, (f32)delta)) {
+                KFATAL("Game update failed, shutting down.");
+                app_state.is_running = FALSE;
                 break;
             }
 
-            /* Call the game's render routine. */
-            if (!appState.gameInstance->render(appState.gameInstance, (f32)delta)) {
-                FFATAL("Game render failed, shutting down.");
-                appState.isRunning = false;
-
+            if (!app_state.game_inst->render(app_state.game_inst, (f32)delta)) {
+                KFATAL("Game render failed, shutting down.");
+                app_state.is_running = FALSE;
                 break;
             }
 
-            /* Refactor packet creation. */
-            renderPacket packet;
-            packet.deltaTime = delta;
-            rendererDrawFrame(&packet);
+            render_packet packet;
+            packet.delta_time = delta;
+            renderer_draw_frame(&packet);
 
-            /* Figure out how long the frame took and, if below. */
-            f64 frameEndTime = platformGetAbsoluteTime();
-            f64 frameElapsedTime = frameEndTime - frameStartTime;
-            runningTime += frameElapsedTime;
-            f64 remainingSeconds = targetFrameSeconds - frameElapsedTime;
+            f64 frame_end_time = platform_get_absolute_time();
+            f64 frame_elapsed_time = frame_end_time - frame_start_time;
+            running_time += frame_elapsed_time;
+            f64 remaining_seconds = target_frame_seconds - frame_elapsed_time;
 
-            if (remainingSeconds > 0) {
-                u64 remainingMessage = (remainingSeconds * 1000);
+            if (remaining_seconds > 0) {
+                u64 remaining_ms = (remaining_seconds * 1000);
 
-                /* If there is time left, give it back to the OS. */
-                b8 limitFrames = false;
-                if (remainingMessage > 0 && limitFrames) {
-                    platformSleep(remainingMessage - 1);
+                b8 limit_frames = FALSE;
+                if (remaining_ms > 0 && limit_frames) {
+                    platform_sleep(remaining_ms - 1);
                 }
 
-                ++frameCount;
+                frame_count++;
             }
 
-            inputUpdate(delta);
+            input_update(delta);
 
-            /* Update last time. */
-            appState.lastTime = currentTime;
+            app_state.last_time = current_time;
         }
     }
 
-    appState.isRunning = false;
+    app_state.is_running = FALSE;
 
-    /* Shutdown event system. */
-    eventUnregister(EVENT_CODE_APPLICATION_QUIT, 0, applicationOnEvent);
-    eventUnregister(EVENT_CODE_KEY_PRESSED, 0, applicationOnKey);
-    eventUnregister(EVENT_CODE_KEY_RELEASED, 0, applicationOnKey);
+    event_unregister(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    event_unregister(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    event_unregister(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
+    event_shutdown();
+    input_shutdown();
 
-    eventShutdown();
-    inputShutdown();
+    renderer_shutdown();
 
-    rendererShutdown();
+    platform_shutdown(&app_state.platform);
 
-    platformShutdown(&appState.platform);
-
-    return true;
+    return TRUE;
 }
 
-b8 applicationOnEvent(u16 code, void *sender, void *listenerInstance, eventContext context) {
+b8 application_on_event(u16 code, void* sender, void* listener_inst, event_context context) {
     switch (code) {
         case EVENT_CODE_APPLICATION_QUIT: {
-            FINFO("EVENT_CODE_APPLICATION_QUIT recieved, shutting down.\n");
-
-            appState.isRunning = false;
-            return true;
+            KINFO("EVENT_CODE_APPLICATION_QUIT recieved, shutting down.\n");
+            app_state.is_running = FALSE;
+            return TRUE;
         }
     }
 
-    return false;
+    return FALSE;
 }
 
-b8 applicationOnKey(u16 code, void *sender, void *listenerInstance, eventContext context) {
+b8 application_on_key(u16 code, void* sender, void* listener_inst, event_context context) {
     if (code == EVENT_CODE_KEY_PRESSED) {
-        u16 keyCode = context.data.u16[0];
-        if (keyCode == KEY_ESCAPE) {
-            /* Technically firing an event to itself, but there may be other listeners. */
-            eventContext data = {};
-            eventFire(EVENT_CODE_APPLICATION_QUIT, 0, data);
+        u16 key_code = context.data.u16[0];
+        if (key_code == KEY_ESCAPE) {
+            event_context data = {};
+            event_fire(EVENT_CODE_APPLICATION_QUIT, 0, data);
 
-            /* Block anything else from processing this. */
-            return true;
-        } else if (keyCode == KEY_A) {
-            /* Example on checking for a key. */
-            FDEBUG("Explicit - A key pressed!");
+            return TRUE;
+        } else if (key_code == KEY_A) {
+            KDEBUG("Explicit - A key pressed!");
         } else {
-            FDEBUG("'%c' key pressed in window.", keyCode);
+            KDEBUG("'%c' key pressed in window.", key_code);
         }
     } else if (code == EVENT_CODE_KEY_RELEASED) {
-        u16 keyCode = context.data.u16[0];
-        if (keyCode == KEY_B) {
-            /* Example on checking for a key. */
-            FDEBUG("Explicit - B key released!");
+        u16 key_code = context.data.u16[0];
+        if (key_code == KEY_B) {
+            KDEBUG("Explicit - B key released!");
         } else {
-            FDEBUG("'%c' key released in window.", keyCode);
+            KDEBUG("'%c' key released in window.", key_code);
         }
     }
-    return false;
+    return FALSE;
 }

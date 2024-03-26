@@ -2,30 +2,31 @@
 
 #include "defines.h"
 
-typedef struct platformState {
-    void *internalState;
-} platformState;
+typedef struct platform_state {
+    void* internal_state;
+} platform_state;
 
-b8 platformStartup(platformState* platformState, const char* applicationName,
-                   i32 x, i32 y, i32 width, i32 height);
+b8 platform_startup(
+    platform_state* plat_state,
+    const char* application_name,
+    i32 x,
+    i32 y,
+    i32 width,
+    i32 height);
 
-void platformShutdown(platformState* platformState);
+void platform_shutdown(platform_state* plat_state);
 
-b8 platformPumpMessages(platformState* platformState);
+b8 platform_pump_messages(platform_state* plat_state);
 
-void *platformAllocate(u64 size, b8 aligned);
-void platformFree(void *block, b8 aligned);
-void *platformZeroMemory(void *block, u64 size);
-void *platformCopyMemory(void *dest, const void *source, u64 size);
-void *platformSetMemory(void *dest, i32 value, u64 size);
+void* platform_allocate(u64 size, b8 aligned);
+void platform_free(void* block, b8 aligned);
+void* platform_zero_memory(void* block, u64 size);
+void* platform_copy_memory(void* dest, const void* source, u64 size);
+void* platform_set_memory(void* dest, i32 value, u64 size);
 
-void platformConsoleWrite(const char *message, u8 colour);
-void platformConsoleWriteError(const char *message, u8 colour);
+void platform_console_write(const char* message, u8 colour);
+void platform_console_write_error(const char* message, u8 colour);
 
-f64 platformGetAbsoluteTime();
+f64 platform_get_absolute_time();
 
-/* Sleep on the thread for the provided ms. This blocks the main thread.
- * Should only be used for giving time back to the OS for unused update power.
- * Therefore it is not exported.
- */
-void platformSleep(u64 ms);
+void platform_sleep(u64 ms);

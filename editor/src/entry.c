@@ -1,22 +1,21 @@
 #include "game.h"
-#include "entry.h"
-#include "core/memory.h"
 
-/* Define the function to create a game */
-b8 createGame(game *outGame) {
-    // Application configuration.
-    outGame->appConfig.startPositionX = 100;
-    outGame->appConfig.startPositionY = 100;
-    outGame->appConfig.startWidth = 1280;
-    outGame->appConfig.startHeight = 720;
-    outGame->appConfig.name = "Freak Engine Editor";
-    outGame->update = gameUpdate;
-    outGame->render = gameRender;
-    outGame->initialize = gameInitialize;
-    outGame->onResize = gameOnResize;
+#include <entry.h>
 
-    /* Create the game state. */
-    outGame->state = allocate(sizeof(gameState), MEMORY_TAG_GAME);
+#include <core/kmemory.h>
 
-    return true;
+b8 create_game(game* out_game) {
+    out_game->app_config.start_pos_x = 100;
+    out_game->app_config.start_pos_y = 100;
+    out_game->app_config.start_width = 1280;
+    out_game->app_config.start_height = 720;
+    out_game->app_config.name = "Kohi Engine Testbed";
+    out_game->update = game_update;
+    out_game->render = game_render;
+    out_game->initialize = game_initialize;
+    out_game->on_resize = game_on_resize;
+
+    out_game->state = kallocate(sizeof(game_state), MEMORY_TAG_GAME);
+
+    return TRUE;
 }
